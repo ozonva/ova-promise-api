@@ -2,7 +2,7 @@ package main
 
 import "go.uber.org/zap"
 
-const ApiVersion = "0.0.1"
+const ApiVersion = "0.1.0"
 
 func main() {
 	logger, _ := zap.NewProduction()
