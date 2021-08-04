@@ -1,7 +1,15 @@
 package main
 
-import "fmt"
+import "go.uber.org/zap"
+
+const ApiVersion = "0.1.0"
 
 func main() {
-	fmt.Println("ova-promise-api v0.1.0")
+	logger, _ := zap.NewProduction()
+
+	defer func(logger *zap.Logger) {
+		_ = logger.Sync()
+	}(logger)
+
+	logger.Info("ova-promise-api", zap.String("version", ApiVersion))
 }
