@@ -1,8 +1,6 @@
 package main
 
-import (
-	"go.uber.org/zap"
-)
+import "go.uber.org/zap"
 
 const ApiVersion = "0.0.1"
 
