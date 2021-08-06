@@ -1,0 +1,67 @@
+un:
+  tests: true
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - deadcode
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - exhaustive
+    - funlen
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - golint
+    #    - gomnd
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nakedret
+    #    - noctx
+    - nolintlint
+    - rowserrcheck
+    - scopelint
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+    - whitespace
+    - asciicheck
+    #    - gochecknoglobals
+    - gocognit
+    - godot
+    #    - godox
+    #    - goerr113
+    - nestif
+    - prealloc
+    - testpackage
+    - wsl
+linters-settings:
+  lll:
+    line-length: 140
+  funlen:
+    lines: 70
+    statements: 50
+  goimports:
+    local-prefixes: gitlab.tcsbank.ru/edu/courses
+  gocritic:
+    enabled-tags:
+      - style
+      - experimental
+      - performance
+      - diagnostic
+      - opinionated
