@@ -69,3 +69,33 @@ func TestSplitSliceToChunkIntegers(t *testing.T) {
 		assert.Equal(t, [][]int{{0}, {1}, {2}, {3}, {4}}, split)
 	})
 }
+
+func TestSplitToChunk(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		split := utils.SplitSliceToChunk([]interface{}{}, 2)
+
+		assert.Equal(t, nil, split)
+	})
+
+	t.Run("one item", func(t *testing.T) {
+		split := utils.SplitSliceToChunk([]interface{}{"hello"}, 2)
+
+		assert.Equal(t, [][]interface{}{{"hello"}}, split)
+	})
+
+	t.Run("multiple items", func(t *testing.T) {
+		sl := []interface{}{"a", "b", "c", 1, 2}
+
+		split := utils.SplitSliceToChunk(sl, 2)
+
+		assert.Equal(t, [][]interface{}{{"a", "b"}, {"c", 1}, {2}}, split)
+	})
+
+	t.Run("multiple items and zero chunkSize", func(t *testing.T) {
+		sl := []interface{}{"a", "b", "c", 1, 2}
+
+		split := utils.SplitSliceToChunk(sl, 0)
+
+		assert.Equal(t, [][]interface{}{{"a"}, {"b"}, {"c"}, {1}, {2}}, split)
+	})
+}

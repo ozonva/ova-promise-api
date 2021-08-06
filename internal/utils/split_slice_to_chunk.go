@@ -53,3 +53,30 @@ func SplitSliceToChunkIntegers(initial []int, chunkSize int) [][]int {
 
 	return result
 }
+
+// SplitSliceToChunk splits a slice of interface into a slice of slices of interface of the chunkSize length.
+// If chunkSize < 1 then chunkSize = 1.
+func SplitSliceToChunk(initial []interface{}, chunkSize int) [][]interface{} {
+	var result [][]interface{}
+
+	if len(initial) == 0 {
+		return result
+	}
+
+	// it's not ub, it's documented behaviour
+	if chunkSize < 1 {
+		chunkSize = 1
+	}
+
+	for i := 0; i < len(initial); i += chunkSize {
+		end := i + chunkSize
+
+		if end > len(initial) {
+			end = len(initial)
+		}
+
+		result = append(result, initial[i:end])
+	}
+
+	return result
+}
