@@ -25,16 +25,8 @@ func configReader(filename string) error {
 	return nil
 }
 
-func main() {
-	logger, _ := zap.NewProduction()
-
-	defer func(logger *zap.Logger) {
-		_ = logger.Sync()
-	}(logger)
-
-	logger.Info("ova-promise-api", zap.String("version", APIVersion))
-
-	for i := 0; i < 10; i++ {
+func readConfig(n int, logger *zap.Logger) {
+	for i := 0; i < n; i++ {
 		filename := fmt.Sprintf("config-file-%d.cfg", i)
 		if err := configReader(filename); err != nil {
 			logger.Error(
@@ -44,4 +36,16 @@ func main() {
 			)
 		}
 	}
+}
+
+func main() {
+	logger, _ := zap.NewProduction()
+
+	defer func(logger *zap.Logger) {
+		_ = logger.Sync()
+	}(logger)
+
+	logger.Info("ova-promise-api", zap.String("version", APIVersion))
+
+	readConfig(1, logger)
 }
