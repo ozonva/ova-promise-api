@@ -3,6 +3,8 @@ package utils_test
 import (
 	"testing"
 
+	"github.com/ozonva/ova-promise-api/internal/domain"
+
 	"github.com/go-playground/assert/v2"
 
 	"github.com/ozonva/ova-promise-api/internal/utils"
@@ -97,5 +99,39 @@ func TestSplitToChunk(t *testing.T) {
 		split := utils.SplitSliceToChunk(sl, 0)
 
 		assert.Equal(t, [][]interface{}{{"a"}, {"b"}, {"c"}, {1}, {2}}, split)
+	})
+}
+
+func TestSplitSliceToChunkPromises(t *testing.T) {
+	p1, _ := domain.NewPromise(domain.GenerateID(), 1, "desc1", nil)
+	p2, _ := domain.NewPromise(domain.GenerateID(), 2, "desc2", nil)
+	p3, _ := domain.NewPromise(domain.GenerateID(), 3, "desc3", nil)
+
+	t.Run("empty", func(t *testing.T) {
+		split := utils.SplitSliceToChunkPromises([]domain.Promise{}, 2)
+
+		assert.Equal(t, nil, split)
+	})
+
+	t.Run("one item", func(t *testing.T) {
+		split := utils.SplitSliceToChunkPromises([]domain.Promise{*p1}, 2)
+
+		assert.Equal(t, [][]domain.Promise{{*p1}}, split)
+	})
+
+	t.Run("multiple items", func(t *testing.T) {
+		sl := []domain.Promise{*p1, *p2, *p3}
+
+		split := utils.SplitSliceToChunkPromises(sl, 2)
+
+		assert.Equal(t, [][]domain.Promise{{*p1, *p2}, {*p3}}, split)
+	})
+
+	t.Run("multiple items and zero chunkSize", func(t *testing.T) {
+		sl := []domain.Promise{*p1, *p2, *p3}
+
+		split := utils.SplitSliceToChunkPromises(sl, 0)
+
+		assert.Equal(t, [][]domain.Promise{{*p1}, {*p2}, {*p3}}, split)
 	})
 }
