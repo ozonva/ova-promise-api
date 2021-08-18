@@ -16,7 +16,7 @@ var _ = Describe("Domain", func() {
 		newPromise = *p
 	})
 
-	Describe("New promise status", func() {
+	Describe("New promise", func() {
 		Context("With status", func() {
 			It("should be a `draft`", func() {
 				Expect(newPromise.Status).To(Equal("draft"))
