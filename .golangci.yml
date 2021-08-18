@@ -18,7 +18,7 @@ linters:
     - gofmt
     - goimports
     - golint
-    #    - gomnd
+    - gomnd
     - goprintffuncname
     - gosec
     - gosimple
@@ -27,7 +27,7 @@ linters:
     - lll
     - misspell
     - nakedret
-    #    - noctx
+    - noctx
     - nolintlint
     - rowserrcheck
     - scopelint
@@ -44,8 +44,8 @@ linters:
     #    - gochecknoglobals
     - gocognit
     - godot
-    #    - godox
-    #    - goerr113
+    - godox
+    - goerr113
     - nestif
     - prealloc
     - testpackage
@@ -57,7 +57,7 @@ linters-settings:
     lines: 70
     statements: 50
   goimports:
-    local-prefixes: gitlab.tcsbank.ru/edu/courses
+    local-prefixes: github.com/ozonva/ova-promise-api
   gocritic:
     enabled-tags:
       - style
