@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const APIVersion = "0.2.0"
+const APIVersion = "0.4.0"
 
 func configReader(filename string) error {
 	f, err := os.Open(filename)
