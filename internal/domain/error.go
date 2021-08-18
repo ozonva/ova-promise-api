@@ -8,4 +8,6 @@ var (
 	ErrInvalidPromiseStatus = errors.New("invalid promise status")
 	ErrEmptyDescription     = errors.New("description can't e empty")
 	ErrEarlierDateDeadline  = errors.New("date deadline can't be earlier than now")
+	ErrTechnical            = errors.New("some shit happened")
+	ErrNotFound             = errors.New("entity not found")
 )
