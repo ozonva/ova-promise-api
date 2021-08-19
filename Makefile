@@ -11,3 +11,7 @@ lint-ci:
 .PHONY: test
 test:
 	@go test --race --vet= ./... -v
+
+.PHONY: mock
+mock:
+	 mockery --all --output internal/mocks

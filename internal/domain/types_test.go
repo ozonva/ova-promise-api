@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/go-playground/assert/v2"
+
 	"github.com/ozonva/ova-promise-api/internal/domain"
 )
 
