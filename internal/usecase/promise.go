@@ -96,5 +96,5 @@ func (i interactor) Flush(ctx context.Context, promises []domain.Promise) []doma
 		}
 	}
 
-	return result
+	return nil
 }
