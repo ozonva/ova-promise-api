@@ -9,6 +9,8 @@ import (
 	"github.com/ozonva/ova-promise-api/internal/domain"
 )
 
+const defaultChunkSize = 1
+
 type Handler interface {
 	PromiseSave(ctx context.Context, promise *domain.Promise) error
 	PromiseSaveList(ctx context.Context, promises []domain.Promise) error
@@ -23,17 +25,24 @@ type Flusher interface {
 
 type HandlerConstructor struct {
 	PromiseRepository PromiseRepository
+	ChunkSize         int
 	Logger            *zap.Logger
 }
 
-func (c HandlerConstructor) New(chunkSize int) Handler {
+func (c HandlerConstructor) New() Handler {
 	if c.PromiseRepository == nil {
 		log.Fatal("PromiseRepository not set!")
+	}
+
+	if c.ChunkSize < 1 {
+		log.Println("using default flusher chunk size")
+
+		c.ChunkSize = defaultChunkSize
 	}
 
 	return interactor{
 		promiseRepo: c.PromiseRepository,
 		logger:      c.Logger,
-		chunkSize:   chunkSize,
+		chunkSize:   c.ChunkSize,
 	}
 }
