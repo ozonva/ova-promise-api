@@ -23,6 +23,7 @@ type saver struct {
 	tickerInterval uint64
 	ch             chan interface{}
 	buffer         []domain.Promise
+	bufferCapacity int
 	ucHandler      usecase.Handler
 	logger         *zap.Logger
 	ctx            context.Context
@@ -33,8 +34,13 @@ func (s *saver) Save(promise domain.Promise) error {
 	s.Lock()
 	defer s.Unlock()
 
-	if len(s.buffer) == cap(s.buffer) {
-		return ErrFullBuffer
+	if len(s.buffer) >= s.bufferCapacity {
+		s.logger.Info("trying to flush buffer")
+		s.flush()
+
+		if len(s.buffer) >= s.bufferCapacity {
+			return ErrFullBuffer
+		}
 	}
 
 	s.buffer = append(s.buffer, promise)
@@ -47,11 +53,12 @@ func (s *saver) Close() {
 	close(s.ch)
 }
 
-func NewSaver(ctx context.Context, tickerInterval, capacity uint64, ucHandler usecase.Handler) Saver {
+func NewSaver(ctx context.Context, tickerInterval uint64, capacity int, ucHandler usecase.Handler) Saver {
 	return &saver{
 		tickerInterval: tickerInterval,
 		ucHandler:      ucHandler,
 		buffer:         make([]domain.Promise, 0, capacity),
+		bufferCapacity: capacity,
 		ctx:            ctx,
 	}
 }
@@ -90,6 +97,9 @@ func (s *saver) flush() {
 
 	if len(s.buffer) > 0 {
 		s.buffer = s.ucHandler.Flush(s.ctx, s.buffer)
-		s.logger.Warn("unsaved data", zap.Any("promises", s.buffer))
+
+		if len(s.buffer) > 0 {
+			s.logger.Warn("unsaved data", zap.Any("promises", s.buffer))
+		}
 	}
 }

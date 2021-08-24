@@ -27,13 +27,11 @@ func TestSaver_Save(t *testing.T) {
 		},
 	)
 
-	t.Run("not enough capacity", func(t *testing.T) {
+	t.Run("nough capacity", func(t *testing.T) {
 		s := saver.NewSaver(context.Background(), 1, 2, &ucHandler)
 		err := s.Save(testdata.TestPromise1)
 		assert.Equal(t, err, nil)
 		err = s.Save(testdata.TestPromise2)
 		assert.Equal(t, err, nil)
-		err = s.Save(testdata.TestPromise3)
-		assert.Equal(t, err, saver.ErrFullBuffer)
 	})
 }
