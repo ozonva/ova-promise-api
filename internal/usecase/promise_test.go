@@ -31,7 +31,7 @@ func TestInteractor_PromiseSave(t *testing.T) {
 	ucHandler := usecase.HandlerConstructor{
 		PromiseRepository: &mockPromiseRepo,
 		Logger:            logger,
-	}.New(1)
+	}.New()
 
 	t.Run("save with error", func(t *testing.T) {
 		err := ucHandler.PromiseSave(context.Background(), &testdata.TestPromiseBroken)
@@ -64,7 +64,7 @@ func TestInteractor_PromiseSaveList(t *testing.T) {
 	ucHandler := usecase.HandlerConstructor{
 		PromiseRepository: &mockPromiseRepo,
 		Logger:            logger,
-	}.New(1)
+	}.New()
 
 	t.Run("save with error", func(t *testing.T) {
 		var promises = []domain.Promise{testdata.TestPromiseBroken, testdata.TestPromise1}
@@ -112,7 +112,7 @@ func TestInteractor_PromiseGetByID(t *testing.T) {
 	ucHandler := usecase.HandlerConstructor{
 		PromiseRepository: &mockPromiseRepo,
 		Logger:            logger,
-	}.New(1)
+	}.New()
 
 	t.Run("get with error", func(t *testing.T) {
 		p, err := ucHandler.PromiseGetByID(context.Background(), testdata.ID0)
@@ -159,7 +159,7 @@ func TestInteractor_PromiseGetList(t *testing.T) {
 	ucHandler := usecase.HandlerConstructor{
 		PromiseRepository: &mockPromiseRepo,
 		Logger:            logger,
-	}.New(1)
+	}.New()
 
 	t.Run("get with error", func(t *testing.T) {
 		p, err := ucHandler.PromiseGetList(context.Background(), 100500, 0)
@@ -194,7 +194,7 @@ func TestInteractor_Flush(t *testing.T) {
 	ucHandler := usecase.HandlerConstructor{
 		PromiseRepository: &mockPromiseRepo,
 		Logger:            logger,
-	}.New(1)
+	}.New()
 
 	t.Run("flush with error", func(t *testing.T) {
 		promises := []domain.Promise{
