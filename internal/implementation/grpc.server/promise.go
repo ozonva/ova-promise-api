@@ -3,6 +3,10 @@ package grpcserver
 import (
 	"context"
 
+	"github.com/google/uuid"
+
+	"github.com/ozonva/ova-promise-api/internal/domain"
+
 	"go.uber.org/zap"
 
 	pb "github.com/ozonva/ova-promise-api/internal/implementation/grpc.server/protocol"
@@ -23,38 +27,79 @@ func NewPromiseService(uc usecase.Handler, logger *zap.Logger) *PromiseService {
 }
 
 func (s *PromiseService) CreatePromise(ctx context.Context, in *pb.CreateRequest) (*pb.Promise, error) {
-	s.logger.Info(
-		"incoming request",
-		zap.Int64("user-id", in.UserID),
+	p, _ := domain.NewPromise(
+		domain.GenerateID(),
+		in.UserID,
+		in.Description,
+		nil,
 	)
+
+	if err := s.ucHandler.PromiseSave(ctx, p); err != nil {
+		return nil, err
+	}
 
 	return nil, nil
 }
 
 func (s *PromiseService) DescribePromise(ctx context.Context, in *pb.UUID) (*pb.Promise, error) {
-	s.logger.Info(
-		"incoming request",
-		zap.Any("promise-id", in.Id),
-	)
+	id, err := uuid.FromBytes(in.Id)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	p, err := s.ucHandler.PromiseGetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	res := pb.Promise{
+		ID:           p.ID.String(),
+		UserID:       p.UserID,
+		Description:  p.Description,
+		Status:       p.Status,
+		DateDeadline: p.DateDeadline.String(),
+		CreatedAt:    p.CreatedAt.String(),
+		UpdatedAt:    p.UpdatedAt.String(),
+	}
+
+	return &res, nil
 }
 
 func (s *PromiseService) ListPromises(ctx context.Context, in *pb.ListPromisesRequest) (*pb.ListPromisesResponse, error) {
-	s.logger.Info(
-		"incoming request",
-		zap.Int64("limit", in.Limit),
-		zap.Int64("offset", in.Offset),
-	)
+	promises, err := s.ucHandler.PromiseGetList(ctx, in.Limit, in.Offset)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	res := &pb.ListPromisesResponse{
+		Promises: nil,
+	}
+
+	for _, p := range promises {
+		r := pb.Promise{
+			ID:           p.ID.String(),
+			UserID:       p.UserID,
+			Description:  p.Description,
+			Status:       p.Status,
+			DateDeadline: p.DateDeadline.String(),
+			CreatedAt:    p.CreatedAt.String(),
+			UpdatedAt:    p.UpdatedAt.String(),
+		}
+		res.Promises = append(res.Promises, &r)
+	}
+
+	return res, nil
 }
 
 func (s *PromiseService) RemovePromise(ctx context.Context, in *pb.UUID) (*pb.SuccessMessage, error) {
-	s.logger.Info(
-		"incoming request",
-		zap.Any("promise-id", in.Id),
-	)
+	id, err := uuid.FromBytes(in.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.ucHandler.PromiseRemove(ctx, id); err != nil {
+		return nil, err
+	}
 
 	return nil, nil
 }

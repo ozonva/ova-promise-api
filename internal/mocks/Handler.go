@@ -78,6 +78,20 @@ func (_m *Handler) PromiseGetList(ctx context.Context, limit uint64, offset uint
 	return r0, r1
 }
 
+// PromiseRemove provides a mock function with given fields: ctx, id
+func (_m *Handler) PromiseRemove(ctx context.Context, id uuid.UUID) error {
+	ret := _m.Called(ctx, id)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // PromiseSave provides a mock function with given fields: ctx, promise
 func (_m *Handler) PromiseSave(ctx context.Context, promise *domain.Promise) error {
 	ret := _m.Called(ctx, promise)

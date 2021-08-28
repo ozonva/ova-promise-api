@@ -98,3 +98,15 @@ func (i interactor) Flush(ctx context.Context, promises []domain.Promise) []doma
 
 	return nil
 }
+
+func (i interactor) PromiseRemove(ctx context.Context, id domain.ID) error {
+	if err := i.promiseRepo.RemovePromise(ctx, id); err != nil {
+		i.logger.Error(
+			"usecase promise-remove: error while flushing objects to repo",
+			zap.String("promises-id", id.String()),
+			zap.Error(err),
+		)
+	}
+
+	return nil
+}

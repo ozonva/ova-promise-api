@@ -19,4 +19,5 @@ type PromiseRepository interface {
 	SavePromiseList(ctx context.Context, promises []domain.Promise) error
 	GetPromiseByID(ctx context.Context, id domain.ID) (*domain.Promise, error)
 	GetPromiseList(ctx context.Context, limit, offset uint64) ([]domain.Promise, error)
+	RemovePromise(ctx context.Context, id domain.ID) error
 }
