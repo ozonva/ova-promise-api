@@ -25,35 +25,36 @@ func NewPromiseService(uc usecase.Handler, logger *zap.Logger) *PromiseService {
 func (s *PromiseService) CreatePromise(ctx context.Context, in *pb.CreateRequest) (*pb.Promise, error) {
 	s.logger.Info(
 		"incoming request",
-		zap.Any("user-id", in.UserID),
+		zap.Int64("user-id", in.UserID),
 	)
 
 	return nil, nil
 }
 
-func (s *PromiseService) DescribePromise(ctx context.Context, in *pb.CreateRequest) (*pb.Promise, error) {
+func (s *PromiseService) DescribePromise(ctx context.Context, in *pb.UUID) (*pb.Promise, error) {
 	s.logger.Info(
 		"incoming request",
-		zap.Any("user-id", in.UserID),
+		zap.Any("promise-id", in.Id),
 	)
 
 	return nil, nil
 }
 
-func (s *PromiseService) ListPromises(ctx context.Context, in *pb.CreateRequest) ([]*pb.Promise, error) {
+func (s *PromiseService) ListPromises(ctx context.Context, in *pb.ListPromisesRequest) (*pb.ListPromisesResponse, error) {
 	s.logger.Info(
 		"incoming request",
-		zap.Any("user-id", in.UserID),
+		zap.Int64("limit", in.Limit),
+		zap.Int64("offset", in.Offset),
 	)
 
 	return nil, nil
 }
 
-func (s *PromiseService) RemovePromise(ctx context.Context, in *pb.CreateRequest) error {
+func (s *PromiseService) RemovePromise(ctx context.Context, in *pb.UUID) (*pb.SuccessMessage, error) {
 	s.logger.Info(
 		"incoming request",
-		zap.Any("user-id", in.UserID),
+		zap.Any("promise-id", in.Id),
 	)
 
-	return nil
+	return nil, nil
 }
