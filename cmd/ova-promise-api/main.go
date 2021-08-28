@@ -12,7 +12,7 @@ import (
 	"github.com/ozonva/ova-promise-api/internal/usecase"
 )
 
-const APIVersion = "0.6.0"
+const APIVersion = "0.7.0"
 
 //nolint //task
 func configReader(filename string) error {
