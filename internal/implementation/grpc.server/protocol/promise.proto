@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option go_package = "github.com/ozonva/ova-promise-api/implementation/grpc.server/protocol/promise";
+
+package promise_grpc;
+
+service PromiseHandler {
+  rpc CreatePromise(CreateRequest) returns (Promise);
+
+}
+
+message CreateRequest{
+  int64 UserID = 1;
+  string Description = 2;
+}
+
+message Promise {
+  string ID = 1;
+  int64 UserID = 2;
+  string Description = 3;
+  string Status = 4;
+}
