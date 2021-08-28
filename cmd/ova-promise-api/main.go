@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
 
 	promiseRepo "github.com/ozonva/ova-promise-api/internal/implementation/pg.repository"
@@ -59,8 +61,29 @@ func main() {
 
 	logger.Info("ova-promise-api", zap.String("version", APIVersion))
 
+	pgConString := fmt.Sprintf(
+		"postgresql://%s:%s@%s:%s/%s",
+		os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"),
+	)
+
+	config, err := pgxpool.ParseConfig(pgConString)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Unable to parse DATABASE_URL: %v\n", err)
+		panic(err)
+	}
+
+	config.MaxConns = 10
+	config.ConnConfig.PreferSimpleProtocol = true
+
+	dbPool, err := pgxpool.ConnectConfig(context.Background(), config)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		panic(err)
+	}
+	defer dbPool.Close()
+
 	ucHandler := usecase.HandlerConstructor{
-		PromiseRepository: promiseRepo.CreateRepository(nil),
+		PromiseRepository: promiseRepo.CreateRepository(dbPool),
 		ChunkSize:         chunkSize,
 		Logger:            logger,
 	}.New()
