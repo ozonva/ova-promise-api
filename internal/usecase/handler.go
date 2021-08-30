@@ -16,6 +16,7 @@ type Handler interface {
 	PromiseSaveList(ctx context.Context, promises []domain.Promise) error
 	PromiseGetByID(ctx context.Context, id domain.ID) (*domain.Promise, error)
 	PromiseGetList(ctx context.Context, limit, offset uint64) ([]domain.Promise, error)
+	PromiseRemove(ctx context.Context, id domain.ID) error
 	Flusher
 }
 

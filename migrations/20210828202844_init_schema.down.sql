@@ -1,0 +1,1 @@
+drop table promises.public.promises;
