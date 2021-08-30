@@ -37,10 +37,6 @@ message Promise {
   google.protobuf.Timestamp updated_at = 7;
 }
 
-message NullableTimestamp {
-  google.protobuf.Timestamp time = 1;
-}
-
 message ListPromisesRequest{
   uint64 limit = 1;
   uint64 offset = 2;
