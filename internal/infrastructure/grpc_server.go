@@ -1,40 +1,40 @@
 package infrastructure
 
 import (
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
-	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
-	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpcZap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
+	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpcCtxTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	grpcOpentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	grpcserver "github.com/ozonva/ova-promise-api/internal/implementation/grpc.server"
+	grpcServer "github.com/ozonva/ova-promise-api/internal/implementation/grpc.server"
 	pb "github.com/ozonva/ova-promise-api/internal/implementation/grpc.server/protocol"
 	"github.com/ozonva/ova-promise-api/internal/usecase"
 )
 
-var grpcMetrics = grpc_prometheus.NewServerMetrics()
+var grpcMetrics = grpcPrometheus.NewServerMetrics()
 
 func InitGRPCServer(uc usecase.Handler, logger *zap.Logger) *grpc.Server {
 	s := grpc.NewServer(
-		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
-			grpc_recovery.StreamServerInterceptor(),
-			grpc_ctxtags.StreamServerInterceptor(),
-			grpc_opentracing.StreamServerInterceptor(),
+		grpc.StreamInterceptor(grpcMiddleware.ChainStreamServer(
+			grpcRecovery.StreamServerInterceptor(),
+			grpcCtxTags.StreamServerInterceptor(),
+			grpcOpentracing.StreamServerInterceptor(),
 			grpcMetrics.StreamServerInterceptor(),
-			grpc_zap.StreamServerInterceptor(logger),
+			grpcZap.StreamServerInterceptor(logger),
 		)),
-		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
-			grpc_recovery.UnaryServerInterceptor(),
-			grpc_ctxtags.UnaryServerInterceptor(),
-			grpc_opentracing.UnaryServerInterceptor(),
+		grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(
+			grpcRecovery.UnaryServerInterceptor(),
+			grpcCtxTags.UnaryServerInterceptor(),
+			grpcOpentracing.UnaryServerInterceptor(),
 			grpcMetrics.UnaryServerInterceptor(),
-			grpc_zap.UnaryServerInterceptor(logger),
+			grpcZap.UnaryServerInterceptor(logger),
 		)),
 	)
-	server := grpcserver.NewPromiseService(uc, logger)
+	server := grpcServer.NewPromiseService(uc, logger)
 	pb.RegisterPromiseHandlerServer(s, server)
 
 	return s
