@@ -3,9 +3,9 @@ package grpcserver
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/ozonva/ova-promise-api/internal/domain"
 
@@ -35,23 +35,13 @@ func (s *PromiseService) CreatePromise(ctx context.Context, in *pb.CreateRequest
 		DateDeadline: in.DateDeadline,
 	}
 
-	var dateDeadline *time.Time
-
-	if in.DateDeadline != "" {
-		t, err := time.Parse(time.RFC3339, in.DateDeadline)
-
-		if err != nil {
-			return nil, err
-		}
-
-		dateDeadline = &t
-	}
+	dateDeadline := in.DateDeadline.AsTime()
 
 	p, err := domain.NewPromise(
 		domain.GenerateID(),
 		in.UserID,
 		in.Description,
-		dateDeadline,
+		&dateDeadline,
 	)
 
 	if err != nil {
@@ -64,8 +54,12 @@ func (s *PromiseService) CreatePromise(ctx context.Context, in *pb.CreateRequest
 
 	res.ID = p.ID.String()
 	res.Status = p.Status
-	res.CreatedAt = p.CreatedAt.String()
-	res.UpdatedAt = p.UpdatedAt.String()
+	res.CreatedAt = timestamppb.New(p.CreatedAt)
+	res.UpdatedAt = timestamppb.New(p.UpdatedAt)
+
+	if p.DateDeadline != nil {
+		res.DateDeadline = timestamppb.New(*p.DateDeadline)
+	}
 
 	return res, nil
 }
@@ -82,13 +76,16 @@ func (s *PromiseService) DescribePromise(ctx context.Context, in *pb.UUID) (*pb.
 	}
 
 	res := pb.Promise{
-		ID:           p.ID.String(),
-		UserID:       p.UserID,
-		Description:  p.Description,
-		Status:       p.Status,
-		DateDeadline: p.DeadlineToString(),
-		CreatedAt:    p.CreatedAt.String(),
-		UpdatedAt:    p.UpdatedAt.String(),
+		ID:          p.ID.String(),
+		UserID:      p.UserID,
+		Description: p.Description,
+		Status:      p.Status,
+		CreatedAt:   timestamppb.New(p.CreatedAt),
+		UpdatedAt:   timestamppb.New(p.UpdatedAt),
+	}
+
+	if p.DateDeadline != nil {
+		res.DateDeadline = timestamppb.New(*p.DateDeadline)
 	}
 
 	return &res, nil
@@ -106,14 +103,18 @@ func (s *PromiseService) ListPromises(ctx context.Context, in *pb.ListPromisesRe
 
 	for _, p := range promises {
 		r := pb.Promise{
-			ID:           p.ID.String(),
-			UserID:       p.UserID,
-			Description:  p.Description,
-			Status:       p.Status,
-			DateDeadline: p.DeadlineToString(),
-			CreatedAt:    p.CreatedAt.String(),
-			UpdatedAt:    p.UpdatedAt.String(),
+			ID:          p.ID.String(),
+			UserID:      p.UserID,
+			Description: p.Description,
+			Status:      p.Status,
+			CreatedAt:   timestamppb.New(p.CreatedAt),
+			UpdatedAt:   timestamppb.New(p.UpdatedAt),
 		}
+
+		if p.DateDeadline != nil {
+			r.DateDeadline = timestamppb.New(*p.DateDeadline)
+		}
+
 		res.Promises = append(res.Promises, &r)
 	}
 

@@ -149,11 +149,3 @@ func SetPromiseDateDeadline(input interface{}) func(fields *Promise) error {
 		return nil
 	}
 }
-
-func (p *Promise) DeadlineToString() string {
-	if p.DateDeadline == nil {
-		return ""
-	}
-
-	return p.DateDeadline.String()
-}

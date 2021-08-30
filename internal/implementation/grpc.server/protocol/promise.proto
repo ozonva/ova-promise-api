@@ -2,6 +2,8 @@ syntax = "proto3";
 
 option go_package = "github.com/ozonva/ova-promise-api/implementation/grpc.server/protocol/promise";
 
+import "google/protobuf/timestamp.proto";
+
 package promise_grpc;
 
 service PromiseHandler {
@@ -22,7 +24,7 @@ message UUID {
 message CreateRequest{
   int64 UserID = 1;
   string Description = 2;
-  string DateDeadline = 3;
+  google.protobuf.Timestamp DateDeadline = 3;
 }
 
 message Promise {
@@ -30,9 +32,13 @@ message Promise {
   int64 UserID = 2;
   string Description = 3;
   string Status = 4;
-  string date_deadline = 5;
-  string created_at = 6;
-  string updated_at = 7;
+  google.protobuf.Timestamp date_deadline = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message NullableTimestamp {
+  google.protobuf.Timestamp time = 1;
 }
 
 message ListPromisesRequest{
