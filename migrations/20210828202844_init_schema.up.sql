@@ -7,6 +7,6 @@ create table promises
     description   text,
     status        text,
     date_deadline timestamp with time zone,
-    crated_at     timestamp with time zone,
+    created_at    timestamp with time zone,
     updated_at    timestamp with time zone
 );

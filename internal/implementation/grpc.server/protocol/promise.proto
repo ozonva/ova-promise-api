@@ -16,12 +16,13 @@ message SuccessMessage{
 }
 
 message UUID {
-  bytes id = 1;
+  string id = 1;
 }
 
 message CreateRequest{
   int64 UserID = 1;
   string Description = 2;
+  string DateDeadline = 3;
 }
 
 message Promise {

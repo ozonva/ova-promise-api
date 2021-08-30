@@ -4,22 +4,18 @@ import (
 	"context"
 	"errors"
 
+	"github.com/ozonva/ova-promise-api/internal/usecase"
+
 	"github.com/jackc/pgx/v4"
 
 	"github.com/ozonva/ova-promise-api/internal/domain"
 )
 
-func (r rw) SavePromise(ctx context.Context, p *domain.Promise) error {
-	tx, err := r.store.Begin(ctx)
-	if err != nil {
-		return err
+func (r rw) SavePromise(ctx context.Context, transaction usecase.Transaction, p *domain.Promise) error {
+	tx, ok := transaction.(pgx.Tx)
+	if !ok {
+		return ErrInvalidTransaction
 	}
-
-	defer func() {
-		if err := tx.Rollback(ctx); err != nil {
-			panic(err)
-		}
-	}()
 
 	if _, err := tx.Exec(
 		ctx,
@@ -33,24 +29,14 @@ func (r rw) SavePromise(ctx context.Context, p *domain.Promise) error {
 		return err
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func (r rw) SavePromiseList(ctx context.Context, promises []domain.Promise) error {
-	tx, err := r.store.Begin(ctx)
-	if err != nil {
-		return err
+func (r rw) SavePromiseList(ctx context.Context, transaction usecase.Transaction, promises []domain.Promise) error {
+	tx, ok := transaction.(pgx.Tx)
+	if !ok {
+		return ErrInvalidTransaction
 	}
-
-	defer func() {
-		if err := tx.Rollback(ctx); err != nil {
-			panic(err)
-		}
-	}()
 
 	batch := &pgx.Batch{}
 
@@ -65,10 +51,6 @@ func (r rw) SavePromiseList(ctx context.Context, promises []domain.Promise) erro
 	br := tx.SendBatch(ctx, batch)
 
 	if err := br.Close(); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(ctx); err != nil {
 		return err
 	}
 
@@ -119,23 +101,13 @@ func (r rw) GetPromiseList(ctx context.Context, limit, offset uint64) ([]domain.
 	return result, nil
 }
 
-func (r rw) RemovePromise(ctx context.Context, id domain.ID) error {
-	tx, err := r.store.Begin(ctx)
-	if err != nil {
-		return err
+func (r rw) RemovePromise(ctx context.Context, transaction usecase.Transaction, id domain.ID) error {
+	tx, ok := transaction.(pgx.Tx)
+	if !ok {
+		return ErrInvalidTransaction
 	}
-
-	defer func() {
-		if err := tx.Rollback(ctx); err != nil {
-			panic(err)
-		}
-	}()
 
 	if _, err := tx.Exec(ctx, `delete from promises where id=$1`, id); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(ctx); err != nil {
 		return err
 	}
 

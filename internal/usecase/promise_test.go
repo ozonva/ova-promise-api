@@ -16,14 +16,49 @@ import (
 
 func TestInteractor_PromiseSave(t *testing.T) {
 	mockPromiseRepo := mocks.PromiseRepository{}
-	mockPromiseRepo.On("SavePromise", mock.AnythingOfType("*context.emptyCtx"), mock.AnythingOfType("*domain.Promise")).Return(
-		func(ctx context.Context, p *domain.Promise) error {
+	mockPromiseRepo.On(
+		"SavePromise",
+		mock.AnythingOfType("*context.emptyCtx"),
+		mock.AnythingOfType("usecase.Transaction"),
+		mock.AnythingOfType("*domain.Promise"),
+	).Return(
+		func(ctx context.Context, tx *usecase.Transaction, p *domain.Promise) error {
 			switch p.ID.String() {
 			case testdata.ID0.String():
 				return testdata.ErrRepoError
 			default:
 				return nil
 			}
+		},
+	)
+
+	mockPromiseRepo.On("TransactionCreate", mock.AnythingOfType("*context.emptyCtx")).Return(
+		func(ctx context.Context) usecase.Transaction {
+			var tx usecase.Transaction
+			return tx
+		},
+		func(ctx context.Context) error {
+			return nil
+		},
+	)
+
+	mockPromiseRepo.On(
+		"TransactionCommit",
+		mock.AnythingOfType("*context.emptyCtx"),
+		mock.AnythingOfType("*usecase.Transaction"),
+	).Return(
+		func(ctx context.Context) error {
+			return nil
+		},
+	)
+
+	mockPromiseRepo.On(
+		"TransactionRollback",
+		mock.AnythingOfType("*context.emptyCtx"),
+		mock.AnythingOfType("*usecase.Transaction"),
+	).Return(
+		func(ctx context.Context) error {
+			return nil
 		},
 	)
 

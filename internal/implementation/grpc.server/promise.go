@@ -2,6 +2,8 @@ package grpcserver
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -27,22 +29,49 @@ func NewPromiseService(uc usecase.Handler, logger *zap.Logger) *PromiseService {
 }
 
 func (s *PromiseService) CreatePromise(ctx context.Context, in *pb.CreateRequest) (*pb.Promise, error) {
-	p, _ := domain.NewPromise(
+	res := &pb.Promise{
+		UserID:       in.UserID,
+		Description:  in.Description,
+		DateDeadline: in.DateDeadline,
+	}
+
+	var dateDeadline *time.Time
+
+	if in.DateDeadline != "" {
+		t, err := time.Parse(time.RFC3339, in.DateDeadline)
+
+		if err != nil {
+			return nil, err
+		}
+
+		dateDeadline = &t
+	}
+
+	p, err := domain.NewPromise(
 		domain.GenerateID(),
 		in.UserID,
 		in.Description,
-		nil,
+		dateDeadline,
 	)
+
+	if err != nil {
+		return res, err
+	}
 
 	if err := s.ucHandler.PromiseSave(ctx, p); err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	res.ID = p.ID.String()
+	res.Status = p.Status
+	res.CreatedAt = p.CreatedAt.String()
+	res.UpdatedAt = p.UpdatedAt.String()
+
+	return res, nil
 }
 
 func (s *PromiseService) DescribePromise(ctx context.Context, in *pb.UUID) (*pb.Promise, error) {
-	id, err := uuid.FromBytes(in.Id)
+	id, err := uuid.Parse(in.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +86,7 @@ func (s *PromiseService) DescribePromise(ctx context.Context, in *pb.UUID) (*pb.
 		UserID:       p.UserID,
 		Description:  p.Description,
 		Status:       p.Status,
-		DateDeadline: p.DateDeadline.String(),
+		DateDeadline: p.DeadlineToString(),
 		CreatedAt:    p.CreatedAt.String(),
 		UpdatedAt:    p.UpdatedAt.String(),
 	}
@@ -81,7 +110,7 @@ func (s *PromiseService) ListPromises(ctx context.Context, in *pb.ListPromisesRe
 			UserID:       p.UserID,
 			Description:  p.Description,
 			Status:       p.Status,
-			DateDeadline: p.DateDeadline.String(),
+			DateDeadline: p.DeadlineToString(),
 			CreatedAt:    p.CreatedAt.String(),
 			UpdatedAt:    p.UpdatedAt.String(),
 		}
@@ -92,14 +121,20 @@ func (s *PromiseService) ListPromises(ctx context.Context, in *pb.ListPromisesRe
 }
 
 func (s *PromiseService) RemovePromise(ctx context.Context, in *pb.UUID) (*pb.SuccessMessage, error) {
-	id, err := uuid.FromBytes(in.Id)
+	res := pb.SuccessMessage{
+		Message: "",
+	}
+
+	id, err := uuid.Parse(in.Id)
 	if err != nil {
-		return nil, err
+		return &res, err
 	}
 
 	if err := s.ucHandler.PromiseRemove(ctx, id); err != nil {
-		return nil, err
+		return &res, err
 	}
 
-	return nil, nil
+	res.Message = fmt.Sprintf("promise with id=%s successfully deleted", in.Id)
+
+	return &res, nil
 }

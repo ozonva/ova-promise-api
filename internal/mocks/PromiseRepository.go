@@ -8,6 +8,8 @@ import (
 	domain "github.com/ozonva/ova-promise-api/internal/domain"
 	mock "github.com/stretchr/testify/mock"
 
+	usecase "github.com/ozonva/ova-promise-api/internal/usecase"
+
 	uuid "github.com/google/uuid"
 )
 
@@ -62,13 +64,13 @@ func (_m *PromiseRepository) GetPromiseList(ctx context.Context, limit uint64, o
 	return r0, r1
 }
 
-// RemovePromise provides a mock function with given fields: ctx, id
-func (_m *PromiseRepository) RemovePromise(ctx context.Context, id uuid.UUID) error {
-	ret := _m.Called(ctx, id)
+// RemovePromise provides a mock function with given fields: ctx, transaction, id
+func (_m *PromiseRepository) RemovePromise(ctx context.Context, transaction usecase.Transaction, id uuid.UUID) error {
+	ret := _m.Called(ctx, transaction, id)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, usecase.Transaction, uuid.UUID) error); ok {
+		r0 = rf(ctx, transaction, id)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -76,13 +78,13 @@ func (_m *PromiseRepository) RemovePromise(ctx context.Context, id uuid.UUID) er
 	return r0
 }
 
-// SavePromise provides a mock function with given fields: ctx, promise
-func (_m *PromiseRepository) SavePromise(ctx context.Context, promise *domain.Promise) error {
-	ret := _m.Called(ctx, promise)
+// SavePromise provides a mock function with given fields: ctx, transaction, promise
+func (_m *PromiseRepository) SavePromise(ctx context.Context, transaction usecase.Transaction, promise *domain.Promise) error {
+	ret := _m.Called(ctx, transaction, promise)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.Promise) error); ok {
-		r0 = rf(ctx, promise)
+	if rf, ok := ret.Get(0).(func(context.Context, usecase.Transaction, *domain.Promise) error); ok {
+		r0 = rf(ctx, transaction, promise)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -90,13 +92,64 @@ func (_m *PromiseRepository) SavePromise(ctx context.Context, promise *domain.Pr
 	return r0
 }
 
-// SavePromiseList provides a mock function with given fields: ctx, promises
-func (_m *PromiseRepository) SavePromiseList(ctx context.Context, promises []domain.Promise) error {
-	ret := _m.Called(ctx, promises)
+// SavePromiseList provides a mock function with given fields: ctx, transaction, promises
+func (_m *PromiseRepository) SavePromiseList(ctx context.Context, transaction usecase.Transaction, promises []domain.Promise) error {
+	ret := _m.Called(ctx, transaction, promises)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, []domain.Promise) error); ok {
-		r0 = rf(ctx, promises)
+	if rf, ok := ret.Get(0).(func(context.Context, usecase.Transaction, []domain.Promise) error); ok {
+		r0 = rf(ctx, transaction, promises)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// TransactionCommit provides a mock function with given fields: ctx, transaction
+func (_m *PromiseRepository) TransactionCommit(ctx context.Context, transaction usecase.Transaction) error {
+	ret := _m.Called(ctx, transaction)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, usecase.Transaction) error); ok {
+		r0 = rf(ctx, transaction)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// TransactionCreate provides a mock function with given fields: ctx
+func (_m *PromiseRepository) TransactionCreate(ctx context.Context) (usecase.Transaction, error) {
+	ret := _m.Called(ctx)
+
+	var r0 usecase.Transaction
+	if rf, ok := ret.Get(0).(func(context.Context) usecase.Transaction); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(usecase.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// TransactionRollback provides a mock function with given fields: ctx, transaction
+func (_m *PromiseRepository) TransactionRollback(ctx context.Context, transaction usecase.Transaction) error {
+	ret := _m.Called(ctx, transaction)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, usecase.Transaction) error); ok {
+		r0 = rf(ctx, transaction)
 	} else {
 		r0 = ret.Error(0)
 	}

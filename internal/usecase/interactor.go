@@ -14,10 +14,19 @@ type interactor struct {
 	chunkSize   int
 }
 
+type Transaction interface{}
+
+type Repository interface {
+	TransactionCreate(ctx context.Context) (Transaction, error)
+	TransactionCommit(ctx context.Context, transaction Transaction) error
+	TransactionRollback(ctx context.Context, transaction Transaction) error
+}
+
 type PromiseRepository interface {
-	SavePromise(ctx context.Context, promise *domain.Promise) error
-	SavePromiseList(ctx context.Context, promises []domain.Promise) error
+	Repository
+	SavePromise(ctx context.Context, transaction Transaction, promise *domain.Promise) error
+	SavePromiseList(ctx context.Context, transaction Transaction, promises []domain.Promise) error
 	GetPromiseByID(ctx context.Context, id domain.ID) (*domain.Promise, error)
 	GetPromiseList(ctx context.Context, limit, offset uint64) ([]domain.Promise, error)
-	RemovePromise(ctx context.Context, id domain.ID) error
+	RemovePromise(ctx context.Context, transaction Transaction, id domain.ID) error
 }
