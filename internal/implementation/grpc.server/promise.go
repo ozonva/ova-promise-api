@@ -206,8 +206,6 @@ func (s *PromiseService) UpdatePromise(ctx context.Context, in *pb.UpdatePromise
 		return nil, err
 	}
 
-	in.GetDateDeadline()
-
 	updateFileds := map[domain.PromiseUpdateProperty]interface{}{
 		domain.PromiseStatus:       &in.Status,
 		domain.PromiseDescription:  &in.Description,
