@@ -101,10 +101,10 @@ func (i interactor) PromiseSaveList(ctx context.Context, promises []domain.Promi
 		return domain.ErrTechnical
 	}
 
-	if err := i.promiseRepo.SavePromiseList(ctx, &tx, promises); err != nil {
+	if err := i.promiseRepo.SavePromiseList(ctx, tx, promises); err != nil {
 		logger.Warn("transaction rollback")
 
-		if errRollback := i.promiseRepo.TransactionRollback(ctx, &tx); errRollback != nil {
+		if errRollback := i.promiseRepo.TransactionRollback(ctx, tx); errRollback != nil {
 			logger.Error("error while transaction rollback", zap.Error(errRollback))
 
 			return domain.ErrTechnical
@@ -117,7 +117,7 @@ func (i interactor) PromiseSaveList(ctx context.Context, promises []domain.Promi
 
 	i.metrics.IncCreatePromiseCounterByValue(float64(len(promises)))
 
-	if err := i.promiseRepo.TransactionCommit(ctx, &tx); err != nil {
+	if err := i.promiseRepo.TransactionCommit(ctx, tx); err != nil {
 		i.logger.Error("error while committing transaction", zap.Error(err))
 
 		return domain.ErrTechnical
@@ -191,7 +191,7 @@ func (i interactor) Flush(ctx context.Context, promises []domain.Promise) []doma
 			return result
 		}
 
-		if err := i.promiseRepo.SavePromiseList(ctx, &tx, chunk); err != nil {
+		if err := i.promiseRepo.SavePromiseList(ctx, tx, chunk); err != nil {
 			i.logger.Error(
 				"usecase flush: error while flushing objects to repo",
 				zap.Any("promises-chunk", chunk),
@@ -205,14 +205,14 @@ func (i interactor) Flush(ctx context.Context, promises []domain.Promise) []doma
 
 			i.logger.Warn("usecase flush: transaction rollback")
 
-			if errRollback := i.promiseRepo.TransactionRollback(ctx, &tx); errRollback != nil {
+			if errRollback := i.promiseRepo.TransactionRollback(ctx, tx); errRollback != nil {
 				i.logger.Error("usecase flush: error while transaction rollback", zap.Error(errRollback))
 			}
 
 			return result
 		}
 
-		if err := i.promiseRepo.TransactionCommit(ctx, &tx); err != nil {
+		if err := i.promiseRepo.TransactionCommit(ctx, tx); err != nil {
 			i.logger.Error("usecase flush: error while committing transaction", zap.Error(err))
 
 			// current chunk + remaining chunks
@@ -279,7 +279,7 @@ func (i interactor) PromiseUpdate(
 		return nil, domain.ErrTechnical
 	}
 
-	if err := i.promiseRepo.TransactionCommit(ctx, &tx); err != nil {
+	if err := i.promiseRepo.TransactionCommit(ctx, tx); err != nil {
 		i.logger.Error(
 			"error while committing transaction",
 			zap.Error(err),
@@ -302,16 +302,16 @@ func (i interactor) PromiseRemove(ctx context.Context, id domain.ID) error {
 		return domain.ErrTechnical
 	}
 
-	if err := i.promiseRepo.RemovePromise(ctx, &tx, id); err != nil {
+	if err := i.promiseRepo.RemovePromise(ctx, tx, id); err != nil {
 		i.logger.Error(
-			"usecase promise-remove: error while flushing objects to repo",
+			"usecase promise-remove: error while removing object from repo",
 			zap.String("promises-id", id.String()),
 			zap.Error(err),
 		)
 
 		i.logger.Warn("usecase promise-remove: transaction rollback")
 
-		if errRollback := i.promiseRepo.TransactionRollback(ctx, &tx); errRollback != nil {
+		if errRollback := i.promiseRepo.TransactionRollback(ctx, tx); errRollback != nil {
 			i.logger.Error("usecase promise-remove: error while transaction rollback", zap.Error(errRollback))
 
 			return domain.ErrTechnical
@@ -332,7 +332,7 @@ func (i interactor) PromiseRemove(ctx context.Context, id domain.ID) error {
 		return domain.ErrTechnical
 	}
 
-	if err := i.promiseRepo.TransactionCommit(ctx, &tx); err != nil {
+	if err := i.promiseRepo.TransactionCommit(ctx, tx); err != nil {
 		i.logger.Error(
 			"usecase promise-remove: error while committing transaction",
 			zap.Error(err),
