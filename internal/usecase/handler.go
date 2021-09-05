@@ -26,9 +26,17 @@ type Flusher interface {
 	Flush(ctx context.Context, promises []domain.Promise) []domain.Promise
 }
 
+type ServerMetrics interface {
+	IncCreatePromiseCounter()
+	IncUpdatePromiseCounter()
+	IncDeletePromiseCounter()
+	IncCreatePromiseCounterByValue(value float64)
+}
+
 type HandlerConstructor struct {
 	PromiseRepository PromiseRepository
 	EventProducer     EventProducer
+	Metrics           ServerMetrics
 	ChunkSize         int
 	Logger            *zap.Logger
 }
@@ -47,6 +55,7 @@ func (c HandlerConstructor) New() Handler {
 	return interactor{
 		promiseRepo:   c.PromiseRepository,
 		eventProducer: c.EventProducer,
+		metrics:       c.Metrics,
 		logger:        c.Logger,
 		chunkSize:     c.ChunkSize,
 	}

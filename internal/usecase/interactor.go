@@ -11,6 +11,7 @@ import (
 type interactor struct {
 	promiseRepo   PromiseRepository
 	eventProducer EventProducer
+	metrics       ServerMetrics
 	logger        *zap.Logger
 	chunkSize     int
 }

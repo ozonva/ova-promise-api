@@ -41,6 +41,8 @@ func (i interactor) PromiseSave(ctx context.Context, promise *domain.Promise) er
 		return domain.ErrTechnical
 	}
 
+	i.metrics.IncCreatePromiseCounter()
+
 	if err := i.eventProducer.NewEventPromiseCreated(ctx, promise); err != nil {
 		i.logger.Error(
 			"usecase promise-save: error while sending NewEventPromiseCreated to message broker",
@@ -112,6 +114,8 @@ func (i interactor) PromiseSaveList(ctx context.Context, promises []domain.Promi
 
 		return domain.ErrTechnical
 	}
+
+	i.metrics.IncCreatePromiseCounterByValue(float64(len(promises)))
 
 	if err := i.promiseRepo.TransactionCommit(ctx, &tx); err != nil {
 		i.logger.Error("error while committing transaction", zap.Error(err))
@@ -263,6 +267,8 @@ func (i interactor) PromiseUpdate(
 		return nil, domain.ErrTechnical
 	}
 
+	i.metrics.IncUpdatePromiseCounter()
+
 	if err := i.eventProducer.NewEventPromiseUpdated(ctx, id); err != nil {
 		i.logger.Error(
 			"error while sending NewEventPromiseUpdated to message broker",
@@ -313,6 +319,8 @@ func (i interactor) PromiseRemove(ctx context.Context, id domain.ID) error {
 
 		return err
 	}
+
+	i.metrics.IncDeletePromiseCounter()
 
 	if err := i.eventProducer.NewEventPromiseRemoved(ctx, id); err != nil {
 		i.logger.Error(
