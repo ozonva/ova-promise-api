@@ -20,8 +20,9 @@ const _ = grpc.SupportPackageIsVersion7
 type PromiseHandlerClient interface {
 	CreatePromise(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*Promise, error)
 	DescribePromise(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Promise, error)
-	ListPromises(ctx context.Context, in *ListPromisesRequest, opts ...grpc.CallOption) (*ListPromisesResponse, error)
+	ListPromises(ctx context.Context, in *ListPromisesRequest, opts ...grpc.CallOption) (*ListPromisesRequestResponse, error)
 	RemovePromise(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*SuccessMessage, error)
+	UpdatePromise(ctx context.Context, in *UpdatePromiseRequest, opts ...grpc.CallOption) (*Promise, error)
 }
 
 type promiseHandlerClient struct {
@@ -50,8 +51,8 @@ func (c *promiseHandlerClient) DescribePromise(ctx context.Context, in *UUID, op
 	return out, nil
 }
 
-func (c *promiseHandlerClient) ListPromises(ctx context.Context, in *ListPromisesRequest, opts ...grpc.CallOption) (*ListPromisesResponse, error) {
-	out := new(ListPromisesResponse)
+func (c *promiseHandlerClient) ListPromises(ctx context.Context, in *ListPromisesRequest, opts ...grpc.CallOption) (*ListPromisesRequestResponse, error) {
+	out := new(ListPromisesRequestResponse)
 	err := c.cc.Invoke(ctx, "/promise_grpc.PromiseHandler/ListPromises", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -68,14 +69,24 @@ func (c *promiseHandlerClient) RemovePromise(ctx context.Context, in *UUID, opts
 	return out, nil
 }
 
+func (c *promiseHandlerClient) UpdatePromise(ctx context.Context, in *UpdatePromiseRequest, opts ...grpc.CallOption) (*Promise, error) {
+	out := new(Promise)
+	err := c.cc.Invoke(ctx, "/promise_grpc.PromiseHandler/UpdatePromise", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PromiseHandlerServer is the server API for PromiseHandler service.
 // All implementations must embed UnimplementedPromiseHandlerServer
 // for forward compatibility
 type PromiseHandlerServer interface {
 	CreatePromise(context.Context, *CreateRequest) (*Promise, error)
 	DescribePromise(context.Context, *UUID) (*Promise, error)
-	ListPromises(context.Context, *ListPromisesRequest) (*ListPromisesResponse, error)
+	ListPromises(context.Context, *ListPromisesRequest) (*ListPromisesRequestResponse, error)
 	RemovePromise(context.Context, *UUID) (*SuccessMessage, error)
+	UpdatePromise(context.Context, *UpdatePromiseRequest) (*Promise, error)
 	mustEmbedUnimplementedPromiseHandlerServer()
 }
 
@@ -89,11 +100,14 @@ func (UnimplementedPromiseHandlerServer) CreatePromise(context.Context, *CreateR
 func (UnimplementedPromiseHandlerServer) DescribePromise(context.Context, *UUID) (*Promise, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DescribePromise not implemented")
 }
-func (UnimplementedPromiseHandlerServer) ListPromises(context.Context, *ListPromisesRequest) (*ListPromisesResponse, error) {
+func (UnimplementedPromiseHandlerServer) ListPromises(context.Context, *ListPromisesRequest) (*ListPromisesRequestResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPromises not implemented")
 }
 func (UnimplementedPromiseHandlerServer) RemovePromise(context.Context, *UUID) (*SuccessMessage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemovePromise not implemented")
+}
+func (UnimplementedPromiseHandlerServer) UpdatePromise(context.Context, *UpdatePromiseRequest) (*Promise, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePromise not implemented")
 }
 func (UnimplementedPromiseHandlerServer) mustEmbedUnimplementedPromiseHandlerServer() {}
 
@@ -180,6 +194,24 @@ func _PromiseHandler_RemovePromise_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PromiseHandler_UpdatePromise_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePromiseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PromiseHandlerServer).UpdatePromise(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/promise_grpc.PromiseHandler/UpdatePromise",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PromiseHandlerServer).UpdatePromise(ctx, req.(*UpdatePromiseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PromiseHandler_ServiceDesc is the grpc.ServiceDesc for PromiseHandler service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -202,6 +234,10 @@ var PromiseHandler_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemovePromise",
 			Handler:    _PromiseHandler_RemovePromise_Handler,
+		},
+		{
+			MethodName: "UpdatePromise",
+			Handler:    _PromiseHandler_UpdatePromise_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

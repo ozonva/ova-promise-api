@@ -14,6 +14,14 @@ type Promise struct {
 	UpdatedAt    time.Time
 }
 
+type PromiseUpdateProperty int
+
+const (
+	PromiseDescription PromiseUpdateProperty = iota
+	PromiseStatus
+	PromiseDateDeadline
+)
+
 type PromiseStatusValue struct {
 	value string
 }

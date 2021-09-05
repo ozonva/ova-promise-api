@@ -61,15 +61,15 @@ func (_m *PromiseHandlerServer) DescribePromise(_a0 context.Context, _a1 *promis
 }
 
 // ListPromises provides a mock function with given fields: _a0, _a1
-func (_m *PromiseHandlerServer) ListPromises(_a0 context.Context, _a1 *promise.ListPromisesRequest) (*promise.ListPromisesResponse, error) {
+func (_m *PromiseHandlerServer) ListPromises(_a0 context.Context, _a1 *promise.ListPromisesRequest) (*promise.ListPromisesRequestResponse, error) {
 	ret := _m.Called(_a0, _a1)
 
-	var r0 *promise.ListPromisesResponse
-	if rf, ok := ret.Get(0).(func(context.Context, *promise.ListPromisesRequest) *promise.ListPromisesResponse); ok {
+	var r0 *promise.ListPromisesRequestResponse
+	if rf, ok := ret.Get(0).(func(context.Context, *promise.ListPromisesRequest) *promise.ListPromisesRequestResponse); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*promise.ListPromisesResponse)
+			r0 = ret.Get(0).(*promise.ListPromisesRequestResponse)
 		}
 	}
 
@@ -98,6 +98,29 @@ func (_m *PromiseHandlerServer) RemovePromise(_a0 context.Context, _a1 *promise.
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, *promise.UUID) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdatePromise provides a mock function with given fields: _a0, _a1
+func (_m *PromiseHandlerServer) UpdatePromise(_a0 context.Context, _a1 *promise.UpdatePromiseRequest) (*promise.Promise, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *promise.Promise
+	if rf, ok := ret.Get(0).(func(context.Context, *promise.UpdatePromiseRequest) *promise.Promise); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*promise.Promise)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *promise.UpdatePromiseRequest) error); ok {
 		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)

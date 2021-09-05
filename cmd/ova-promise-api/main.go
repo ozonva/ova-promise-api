@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
 
+	eventProducer "github.com/ozonva/ova-promise-api/internal/implementation/kafka.producer"
 	promiseRepo "github.com/ozonva/ova-promise-api/internal/implementation/pg.repository"
 	"github.com/ozonva/ova-promise-api/internal/infrastructure"
 	"github.com/ozonva/ova-promise-api/internal/usecase"
@@ -53,6 +54,8 @@ const (
 )
 
 func main() {
+	ctx := context.Background()
+
 	logger, _ := zap.NewProduction()
 
 	defer func(logger *zap.Logger) {
@@ -75,15 +78,18 @@ func main() {
 	config.MaxConns = 10
 	config.ConnConfig.PreferSimpleProtocol = true
 
-	dbPool, err := pgxpool.ConnectConfig(context.Background(), config)
+	dbPool, err := pgxpool.ConnectConfig(ctx, config)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		panic(err)
 	}
 	defer dbPool.Close()
 
+	kafkaWriter := infrastructure.NewKafkaWriter(os.Getenv("KAFKA_BROKER"), os.Getenv("PROMISE_TOPIC"), true)
+
 	ucHandler := usecase.HandlerConstructor{
 		PromiseRepository: promiseRepo.CreateRepository(dbPool),
+		EventProducer:     eventProducer.CreateProducer(kafkaWriter),
 		ChunkSize:         chunkSize,
 		Logger:            logger,
 	}.New()
