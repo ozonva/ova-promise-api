@@ -34,7 +34,7 @@ type PromiseRepository interface {
 }
 
 type EventProducer interface {
-	NewEventPromiseCreated(ctx context.Context, promise *domain.Promise) error
-	NewEventPromiseRemoved(ctx context.Context, id domain.ID) error
-	NewEventPromiseUpdated(ctx context.Context, id domain.ID) error
+	SendEventPromiseCreated(ctx context.Context, promise *domain.Promise) error
+	SendEventPromiseRemoved(ctx context.Context, id domain.ID) error
+	SendEventPromiseUpdated(ctx context.Context, id domain.ID) error
 }

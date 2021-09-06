@@ -17,7 +17,7 @@ type EventProducer struct {
 }
 
 // NewEventPromiseCreated provides a mock function with given fields: ctx, promise
-func (_m *EventProducer) NewEventPromiseCreated(ctx context.Context, promise *domain.Promise) error {
+func (_m *EventProducer) SendEventPromiseCreated(ctx context.Context, promise *domain.Promise) error {
 	ret := _m.Called(ctx, promise)
 
 	var r0 error
@@ -31,7 +31,7 @@ func (_m *EventProducer) NewEventPromiseCreated(ctx context.Context, promise *do
 }
 
 // NewEventPromiseRemoved provides a mock function with given fields: ctx, id
-func (_m *EventProducer) NewEventPromiseRemoved(ctx context.Context, id uuid.UUID) error {
+func (_m *EventProducer) SendEventPromiseRemoved(ctx context.Context, id uuid.UUID) error {
 	ret := _m.Called(ctx, id)
 
 	var r0 error
@@ -45,7 +45,7 @@ func (_m *EventProducer) NewEventPromiseRemoved(ctx context.Context, id uuid.UUI
 }
 
 // NewEventPromiseUpdated provides a mock function with given fields: ctx, id
-func (_m *EventProducer) NewEventPromiseUpdated(ctx context.Context, id uuid.UUID) error {
+func (_m *EventProducer) SendEventPromiseUpdated(ctx context.Context, id uuid.UUID) error {
 	ret := _m.Called(ctx, id)
 
 	var r0 error

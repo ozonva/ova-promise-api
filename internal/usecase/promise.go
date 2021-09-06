@@ -43,9 +43,9 @@ func (i interactor) PromiseSave(ctx context.Context, promise *domain.Promise) er
 
 	i.metrics.IncCreatePromiseCounter()
 
-	if err := i.eventProducer.NewEventPromiseCreated(ctx, promise); err != nil {
+	if err := i.eventProducer.SendEventPromiseCreated(ctx, promise); err != nil {
 		i.logger.Error(
-			"usecase promise-save: error while sending NewEventPromiseCreated to message broker",
+			"usecase promise-save: error while sending SendEventPromiseCreated to message broker",
 			zap.Any("promise", promise),
 			zap.Error(err),
 		)
@@ -269,9 +269,9 @@ func (i interactor) PromiseUpdate(
 
 	i.metrics.IncUpdatePromiseCounter()
 
-	if err := i.eventProducer.NewEventPromiseUpdated(ctx, id); err != nil {
+	if err := i.eventProducer.SendEventPromiseUpdated(ctx, id); err != nil {
 		i.logger.Error(
-			"error while sending NewEventPromiseUpdated to message broker",
+			"error while sending SendEventPromiseUpdated to message broker",
 			zap.Any("promise-id", id),
 			zap.Error(err),
 		)
@@ -322,9 +322,9 @@ func (i interactor) PromiseRemove(ctx context.Context, id domain.ID) error {
 
 	i.metrics.IncDeletePromiseCounter()
 
-	if err := i.eventProducer.NewEventPromiseRemoved(ctx, id); err != nil {
+	if err := i.eventProducer.SendEventPromiseRemoved(ctx, id); err != nil {
 		i.logger.Error(
-			"usecase promise-save: error while sending NewEventPromiseRemoved to message broker",
+			"usecase promise-save: error while sending SendEventPromiseRemoved to message broker",
 			zap.Any("promise-id", id),
 			zap.Error(err),
 		)

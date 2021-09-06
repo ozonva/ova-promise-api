@@ -29,7 +29,7 @@ func (w w) Send(ctx context.Context, event *cloudevents.Event) error {
 	return nil
 }
 
-func (w w) NewEventPromiseCreated(ctx context.Context, promise *domain.Promise) error {
+func (w w) SendEventPromiseCreated(ctx context.Context, promise *domain.Promise) error {
 	ev := NewEvent()
 	ev.SetID(domain.GenerateID().String())
 	ev.SetType("PromiseCreated")
@@ -44,7 +44,7 @@ func (w w) NewEventPromiseCreated(ctx context.Context, promise *domain.Promise) 
 	return w.Send(ctx, ev)
 }
 
-func (w w) NewEventPromiseRemoved(ctx context.Context, id domain.ID) error {
+func (w w) SendEventPromiseRemoved(ctx context.Context, id domain.ID) error {
 	ev := NewEvent()
 	ev.SetID(domain.GenerateID().String())
 	ev.SetType("PromiseDeleted")
@@ -59,7 +59,7 @@ func (w w) NewEventPromiseRemoved(ctx context.Context, id domain.ID) error {
 	return w.Send(ctx, ev)
 }
 
-func (w w) NewEventPromiseUpdated(ctx context.Context, id domain.ID) error {
+func (w w) SendEventPromiseUpdated(ctx context.Context, id domain.ID) error {
 	ev := NewEvent()
 	ev.SetID(domain.GenerateID().String())
 	ev.SetType("PromiseUpdated")
