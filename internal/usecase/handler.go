@@ -17,6 +17,8 @@ type Handler interface {
 	PromiseGetByID(ctx context.Context, id domain.ID) (*domain.Promise, error)
 	PromiseGetList(ctx context.Context, limit, offset uint64) ([]domain.Promise, error)
 	PromiseRemove(ctx context.Context, id domain.ID) error
+	PromiseSaveListChunks(ctx context.Context, promises []domain.Promise, chunkSize int) error
+	PromiseUpdate(ctx context.Context, id domain.ID, fieldsToUpdate map[domain.PromiseUpdateProperty]interface{}) (*domain.Promise, error)
 	Flusher
 }
 
@@ -24,8 +26,17 @@ type Flusher interface {
 	Flush(ctx context.Context, promises []domain.Promise) []domain.Promise
 }
 
+type ServerMetrics interface {
+	IncCreatePromiseCounter()
+	IncUpdatePromiseCounter()
+	IncDeletePromiseCounter()
+	IncCreatePromiseCounterByValue(value float64)
+}
+
 type HandlerConstructor struct {
 	PromiseRepository PromiseRepository
+	EventProducer     EventProducer
+	Metrics           ServerMetrics
 	ChunkSize         int
 	Logger            *zap.Logger
 }
@@ -42,8 +53,10 @@ func (c HandlerConstructor) New() Handler {
 	}
 
 	return interactor{
-		promiseRepo: c.PromiseRepository,
-		logger:      c.Logger,
-		chunkSize:   c.ChunkSize,
+		promiseRepo:   c.PromiseRepository,
+		eventProducer: c.EventProducer,
+		metrics:       c.Metrics,
+		logger:        c.Logger,
+		chunkSize:     c.ChunkSize,
 	}
 }

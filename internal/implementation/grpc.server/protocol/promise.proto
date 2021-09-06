@@ -9,8 +9,9 @@ package promise_grpc;
 service PromiseHandler {
   rpc CreatePromise(CreateRequest) returns (Promise);
   rpc DescribePromise(UUID) returns (Promise);
-  rpc ListPromises(ListPromisesRequest) returns (ListPromisesResponse);
+  rpc ListPromises(ListPromisesRequest) returns (ListPromisesRequestResponse);
   rpc RemovePromise(UUID) returns (SuccessMessage);
+  rpc UpdatePromise(UpdatePromiseRequest) returns (Promise);
 }
 
 message SuccessMessage{
@@ -37,11 +38,18 @@ message Promise {
   google.protobuf.Timestamp updated_at = 7;
 }
 
+message UpdatePromiseRequest {
+  string ID = 1;
+  string Description = 2;
+  string Status = 3;
+  google.protobuf.Timestamp date_deadline = 4;
+}
+
 message ListPromisesRequest{
   uint64 limit = 1;
   uint64 offset = 2;
 }
 
-message ListPromisesResponse{
+message ListPromisesRequestResponse{
   repeated Promise Promises = 1;
 }

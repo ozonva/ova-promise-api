@@ -4,7 +4,14 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
+
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	eventProducer "github.com/ozonva/ova-promise-api/internal/implementation/kafka.producer"
+	prometheusmetrics "github.com/ozonva/ova-promise-api/internal/implementation/prometheus.metrics"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
@@ -14,7 +21,7 @@ import (
 	"github.com/ozonva/ova-promise-api/internal/usecase"
 )
 
-const APIVersion = "0.7.0"
+const APIVersion = "0.8.0"
 
 //nolint //task
 func configReader(filename string) error {
@@ -52,7 +59,10 @@ const (
 	address   = "127.0.0.1:9001"
 )
 
+//nolint // main func may be dirty
 func main() {
+	ctx := context.Background()
+
 	logger, _ := zap.NewProduction()
 
 	defer func(logger *zap.Logger) {
@@ -75,20 +85,45 @@ func main() {
 	config.MaxConns = 10
 	config.ConnConfig.PreferSimpleProtocol = true
 
-	dbPool, err := pgxpool.ConnectConfig(context.Background(), config)
+	dbPool, err := pgxpool.ConnectConfig(ctx, config)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		panic(err)
 	}
 	defer dbPool.Close()
 
+	kafkaWriter := infrastructure.NewKafkaWriter(os.Getenv("KAFKA_BROKER"), os.Getenv("PROMISE_TOPIC"), true)
+
 	ucHandler := usecase.HandlerConstructor{
 		PromiseRepository: promiseRepo.CreateRepository(dbPool),
+		EventProducer:     eventProducer.CreateProducer(kafkaWriter),
 		ChunkSize:         chunkSize,
+		Metrics:           prometheusmetrics.NewServerMetrics(),
 		Logger:            logger,
 	}.New()
 
 	server := infrastructure.InitGRPCServer(ucHandler, logger)
+
+	grpc_prometheus.Register(server)
+
+	httpServer := http.Server{
+		Addr:    "127.0.0.1:9002",
+		Handler: promhttp.Handler(),
+	}
+
+	listenerHTTP, err := net.Listen("tcp", "127.0.0.1:9002")
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+
+	go func() {
+		err := httpServer.Serve(listenerHTTP)
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
+	}()
+
+	http.Handle("/metrics", promhttp.Handler())
 
 	listener, err := net.Listen("tcp", address)
 	if err != nil {

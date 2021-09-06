@@ -9,9 +9,11 @@ import (
 )
 
 type interactor struct {
-	promiseRepo PromiseRepository
-	logger      *zap.Logger
-	chunkSize   int
+	promiseRepo   PromiseRepository
+	eventProducer EventProducer
+	metrics       ServerMetrics
+	logger        *zap.Logger
+	chunkSize     int
 }
 
 type Transaction interface{}
@@ -29,4 +31,10 @@ type PromiseRepository interface {
 	GetPromiseByID(ctx context.Context, id domain.ID) (*domain.Promise, error)
 	GetPromiseList(ctx context.Context, limit, offset uint64) ([]domain.Promise, error)
 	RemovePromise(ctx context.Context, transaction Transaction, id domain.ID) error
+}
+
+type EventProducer interface {
+	SendEventPromiseCreated(ctx context.Context, promise *domain.Promise) error
+	SendEventPromiseRemoved(ctx context.Context, id domain.ID) error
+	SendEventPromiseUpdated(ctx context.Context, id domain.ID) error
 }

@@ -119,3 +119,40 @@ func (_m *Handler) PromiseSaveList(ctx context.Context, promises []domain.Promis
 
 	return r0
 }
+
+// PromiseSaveListChunks provides a mock function with given fields: ctx, promises, chunkSize
+func (_m *Handler) PromiseSaveListChunks(ctx context.Context, promises []domain.Promise, chunkSize int) error {
+	ret := _m.Called(ctx, promises, chunkSize)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, []domain.Promise, int) error); ok {
+		r0 = rf(ctx, promises, chunkSize)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// PromiseUpdate provides a mock function with given fields: ctx, id, fieldsToUpdate
+func (_m *Handler) PromiseUpdate(ctx context.Context, id uuid.UUID, fieldsToUpdate map[domain.PromiseUpdateProperty]interface{}) (*domain.Promise, error) {
+	ret := _m.Called(ctx, id, fieldsToUpdate)
+
+	var r0 *domain.Promise
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID, map[domain.PromiseUpdateProperty]interface{}) *domain.Promise); ok {
+		r0 = rf(ctx, id, fieldsToUpdate)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.Promise)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, uuid.UUID, map[domain.PromiseUpdateProperty]interface{}) error); ok {
+		r1 = rf(ctx, id, fieldsToUpdate)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

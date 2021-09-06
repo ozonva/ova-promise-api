@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/opentracing/opentracing-go"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/ozonva/ova-promise-api/internal/domain"
@@ -14,6 +15,8 @@ import (
 	pb "github.com/ozonva/ova-promise-api/internal/implementation/grpc.server/protocol"
 	"github.com/ozonva/ova-promise-api/internal/usecase"
 )
+
+const chunkSize = 100
 
 type PromiseService struct {
 	pb.UnimplementedPromiseHandlerServer
@@ -29,6 +32,9 @@ func NewPromiseService(uc usecase.Handler, logger *zap.Logger) *PromiseService {
 }
 
 func (s *PromiseService) CreatePromise(ctx context.Context, in *pb.CreateRequest) (*pb.Promise, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "grpc_handler:create_promise")
+	defer span.Finish()
+
 	res := &pb.Promise{
 		UserID:       in.UserID,
 		Description:  in.Description,
@@ -65,6 +71,9 @@ func (s *PromiseService) CreatePromise(ctx context.Context, in *pb.CreateRequest
 }
 
 func (s *PromiseService) DescribePromise(ctx context.Context, in *pb.UUID) (*pb.Promise, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "grpc_handler:describe_update")
+	defer span.Finish()
+
 	id, err := uuid.Parse(in.Id)
 	if err != nil {
 		return nil, err
@@ -91,13 +100,16 @@ func (s *PromiseService) DescribePromise(ctx context.Context, in *pb.UUID) (*pb.
 	return &res, nil
 }
 
-func (s *PromiseService) ListPromises(ctx context.Context, in *pb.ListPromisesRequest) (*pb.ListPromisesResponse, error) {
+func (s *PromiseService) ListPromises(ctx context.Context, in *pb.ListPromisesRequest) (*pb.ListPromisesRequestResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "grpc_handler:list_promise")
+	defer span.Finish()
+
 	promises, err := s.ucHandler.PromiseGetList(ctx, in.Limit, in.Offset)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &pb.ListPromisesResponse{
+	res := &pb.ListPromisesRequestResponse{
 		Promises: nil,
 	}
 
@@ -122,6 +134,9 @@ func (s *PromiseService) ListPromises(ctx context.Context, in *pb.ListPromisesRe
 }
 
 func (s *PromiseService) RemovePromise(ctx context.Context, in *pb.UUID) (*pb.SuccessMessage, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "grpc_handler:remove_promise")
+	defer span.Finish()
+
 	res := pb.SuccessMessage{
 		Message: "",
 	}
@@ -136,6 +151,88 @@ func (s *PromiseService) RemovePromise(ctx context.Context, in *pb.UUID) (*pb.Su
 	}
 
 	res.Message = fmt.Sprintf("promise with id=%s successfully deleted", in.Id)
+
+	return &res, nil
+}
+
+func (s *PromiseService) SavePromiseList(ctx context.Context, in *pb.ListPromisesRequestResponse) (*pb.SuccessMessage, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "grpc_handler:save_promise_list")
+	defer span.Finish()
+
+	res := pb.SuccessMessage{
+		Message: "",
+	}
+
+	protoPromises := in.GetPromises()
+
+	promises := make([]domain.Promise, len(protoPromises))
+
+	for idx, promise := range protoPromises {
+		id, err := uuid.Parse(promise.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		promises[idx] = domain.Promise{
+			ID:          id,
+			UserID:      promise.UserID,
+			Description: promise.Description,
+			Status:      promise.Status,
+			CreatedAt:   promise.CreatedAt.AsTime(),
+			UpdatedAt:   promise.UpdatedAt.AsTime(),
+		}
+
+		if promise.DateDeadline != nil {
+			t := promise.DateDeadline.AsTime()
+			promises[idx].DateDeadline = &t
+		}
+	}
+
+	if err := s.ucHandler.PromiseSaveListChunks(ctx, promises, chunkSize); err != nil {
+		return &res, err
+	}
+
+	res.Message = "list successfully saved"
+
+	return &res, nil
+}
+
+func (s *PromiseService) UpdatePromise(ctx context.Context, in *pb.UpdatePromiseRequest) (*pb.Promise, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "grpc_handler:update_promise")
+	defer span.Finish()
+
+	id, err := uuid.Parse(in.GetID())
+	if err != nil {
+		return nil, err
+	}
+
+	updateFileds := map[domain.PromiseUpdateProperty]interface{}{
+		domain.PromiseStatus:       &in.Status,
+		domain.PromiseDescription:  &in.Description,
+		domain.PromiseDateDeadline: &in.DateDeadline,
+	}
+
+	if in.GetDateDeadline() != nil {
+		updateFileds[domain.PromiseDateDeadline] = &in.DateDeadline
+	}
+
+	promise, err := s.ucHandler.PromiseUpdate(ctx, id, updateFileds)
+	if err != nil {
+		return nil, err
+	}
+
+	res := pb.Promise{
+		ID:          promise.ID.String(),
+		UserID:      promise.UserID,
+		Description: promise.Description,
+		Status:      promise.Status,
+		CreatedAt:   timestamppb.New(promise.CreatedAt),
+		UpdatedAt:   timestamppb.New(promise.UpdatedAt),
+	}
+
+	if promise.DateDeadline != nil {
+		res.DateDeadline = timestamppb.New(*promise.DateDeadline)
+	}
 
 	return &res, nil
 }
