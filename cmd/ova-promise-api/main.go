@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -23,7 +24,7 @@ import (
 
 const APIVersion = "0.8.0"
 
-//nolint //task
+//nolint // deprecated
 func configReader(filename string) error {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -33,14 +34,14 @@ func configReader(filename string) error {
 	defer func(f *os.File) {
 		err := f.Close()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}(f)
 
 	return nil
 }
 
-//nolint //task
+//nolint // deprecated
 func readConfig(n int, logger *zap.Logger) {
 	for i := 0; i < n; i++ {
 		filename := fmt.Sprintf("config-file-%d.cfg", i)
@@ -74,7 +75,7 @@ func main() {
 	dbConfig, err := pgxpool.ParseConfig(cfg.Database.ConnectionString)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Unable to parse DATABASE_URL: %v\n", err)
-		panic(err)
+		logger.Fatal(err.Error())
 	}
 
 	dbConfig.MaxConns = cfg.Database.MaxConn
@@ -83,7 +84,7 @@ func main() {
 	dbPool, err := pgxpool.ConnectConfig(ctx, dbConfig)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		panic(err)
+		logger.Fatal(err.Error())
 	}
 	defer dbPool.Close()
 
