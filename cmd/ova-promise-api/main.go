@@ -54,11 +54,6 @@ func readConfig(n int, logger *zap.Logger) {
 	}
 }
 
-const (
-	chunkSize = 10
-	address   = "127.0.0.1:9001"
-)
-
 //nolint // main func may be dirty
 func main() {
 	ctx := context.Background()
@@ -71,47 +66,43 @@ func main() {
 
 	logger.Info("ova-promise-api", zap.String("version", APIVersion))
 
-	pgConString := fmt.Sprintf(
-		"postgresql://%s:%s@%s:%s/%s",
-		os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"),
-	)
+	cfg, err := infrastructure.NewConfigFromEnv()
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
 
-	config, err := pgxpool.ParseConfig(pgConString)
+	dbConfig, err := pgxpool.ParseConfig(cfg.Database.ConnectionString)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Unable to parse DATABASE_URL: %v\n", err)
 		panic(err)
 	}
 
-	config.MaxConns = 10
-	config.ConnConfig.PreferSimpleProtocol = true
+	dbConfig.MaxConns = cfg.Database.MaxConn
+	dbConfig.ConnConfig.PreferSimpleProtocol = true
 
-	dbPool, err := pgxpool.ConnectConfig(ctx, config)
+	dbPool, err := pgxpool.ConnectConfig(ctx, dbConfig)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		panic(err)
 	}
 	defer dbPool.Close()
 
-	kafkaWriter := infrastructure.NewKafkaWriter(os.Getenv("KAFKA_BROKER"), os.Getenv("PROMISE_TOPIC"), true)
+	kafkaWriter := infrastructure.NewKafkaWriter(cfg.Kafka.Broker, cfg.Kafka.TopicPromise, true)
 
 	ucHandler := usecase.HandlerConstructor{
 		PromiseRepository: promiseRepo.CreateRepository(dbPool),
 		EventProducer:     eventProducer.CreateProducer(kafkaWriter),
-		ChunkSize:         chunkSize,
+		ChunkSize:         cfg.App.ChunkSize,
 		Metrics:           prometheusmetrics.NewServerMetrics(),
 		Logger:            logger,
 	}.New()
 
-	server := infrastructure.InitGRPCServer(ucHandler, logger)
-
-	grpc_prometheus.Register(server)
-
 	httpServer := http.Server{
-		Addr:    "127.0.0.1:9002",
+		Addr:    cfg.HTTPServer.Addr,
 		Handler: promhttp.Handler(),
 	}
 
-	listenerHTTP, err := net.Listen("tcp", "127.0.0.1:9002")
+	listenerHTTP, err := net.Listen("tcp", cfg.HTTPServer.Addr)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -124,15 +115,20 @@ func main() {
 	}()
 
 	http.Handle("/metrics", promhttp.Handler())
+	logger.Info("starting http server", zap.String("addr", cfg.HTTPServer.Addr))
 
-	listener, err := net.Listen("tcp", address)
+	grpcServer := infrastructure.InitGRPCServer(ucHandler, logger)
+
+	grpc_prometheus.Register(grpcServer)
+
+	listener, err := net.Listen("tcp", cfg.GRPCServer.Addr)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
 
-	logger.Info("starting grpc server")
+	logger.Info("starting grpc server", zap.String("addr", cfg.GRPCServer.Addr))
 
-	if err := server.Serve(listener); err != nil {
+	if err := grpcServer.Serve(listener); err != nil {
 		logger.Fatal(err.Error())
 	}
 }
