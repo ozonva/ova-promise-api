@@ -26,6 +26,7 @@ type Config struct {
 		User             string `env:"DB_USER,required"`
 		Password         string `env:"DB_PASSWORD,required"`
 		Name             string `env:"DB_NAME,required"`
+		MaxConn          int32  `env:"DB_MAX_CONN" envDefault:"10"`
 	}
 
 	Kafka struct {

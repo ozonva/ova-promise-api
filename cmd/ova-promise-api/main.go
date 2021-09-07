@@ -77,7 +77,7 @@ func main() {
 		panic(err)
 	}
 
-	dbConfig.MaxConns = 10
+	dbConfig.MaxConns = cfg.Database.MaxConn
 	dbConfig.ConnConfig.PreferSimpleProtocol = true
 
 	dbPool, err := pgxpool.ConnectConfig(ctx, dbConfig)
