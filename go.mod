@@ -3,6 +3,7 @@ module github.com/ozonva/ova-promise-api
 go 1.16
 
 require (
+	github.com/caarlos0/env/v6 v6.7.1
 	github.com/cloudevents/sdk-go/v2 v2.5.0
 	github.com/go-playground/assert/v2 v2.0.1
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -14,7 +15,7 @@ require (
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.10.1
 	github.com/opentracing/opentracing-go v1.1.0
-	github.com/prometheus/client_golang v1.11.0 // indirect
+	github.com/prometheus/client_golang v1.11.0
 	github.com/segmentio/kafka-go v0.4.17
 	github.com/stretchr/testify v1.7.0
 	go.uber.org/zap v1.18.1
